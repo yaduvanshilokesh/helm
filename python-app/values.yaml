@@ -1,0 +1,52 @@
+replicaCount: 5
+
+image:
+  repository: aleksxp/docker-eve-python
+  pullPolicy: IfNotPresent
+  tag: ""
+
+service:
+  type: LoadBalancer
+  port: 80
+
+resources:
+  limits:
+    cpu: 150m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 80Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 5
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 60
+
+affinity:
+  nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: app-deployment
+            operator: In
+            values:
+            - true
+          - key: db-deployment
+            operator: In
+            values:
+            - false
+          - key: monitoring-deployment
+            operator: In
+            values:
+            - false
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 25% 
+    maxUnavailable: 25% 
+
+pdb:
+  minAvailable: 2
